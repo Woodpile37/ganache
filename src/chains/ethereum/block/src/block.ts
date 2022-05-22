@@ -43,7 +43,7 @@ export class Block {
       const totalDifficulty = deserialized[3];
       this.header = makeHeader(this._raw, totalDifficulty);
       this._rawTransactionMetaData = deserialized[4] || [];
-      this._size = Quantity.from(deserialized[5]).toNumber();
+      this._size = Quantity.toNumber(deserialized[5]);
     }
   }
 
@@ -63,7 +63,7 @@ export class Block {
         hash,
         this.hash().toBuffer(),
         this.header.number.toBuffer(),
-        Quantity.from(index).toBuffer()
+        Quantity.toBuffer(index)
       ];
       return TransactionFactory.fromDatabaseTx(raw, common, extra);
     });
@@ -83,7 +83,7 @@ export class Block {
         hash,
         hashBuffer,
         number,
-        Quantity.from(index).toBuffer()
+        Quantity.toBuffer(index)
       ];
       const tx = TransactionFactory.fromDatabaseTx(raw, common, extra);
       // we could either parse the raw data to check if the tx is type 2,
