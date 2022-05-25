@@ -68,16 +68,14 @@ export function GetConnector<T extends FlavorName>(
   try {
     switch (flavor) {
       case FilecoinFlavorName: {
-        // HACKATHON HACK: metamask doesn't allow `eval`
-        throw new Error("Filecoin flavor not supported in metamask extension");
-        // flavor = "@ganache/filecoin" as any;
-        // // TODO: remove the `typeof f.default != "undefined" ? ` check once the
-        // // published filecoin plugin is updated to
-        // const f = eval("require")(flavor);
-        // const Connector: FilecoinConnector =
-        //   typeof f.default != "undefined" ? f.default.Connector : f.Connector;
-        // // @ts-ignore
-        // return new Connector(providerOptions, executor);
+        flavor = "@ganache/filecoin" as any;
+        // TODO: remove the `typeof f.default != "undefined" ? ` check once the
+        // published filecoin plugin is updated to
+        const f = eval("require")(flavor);
+        const Connector: FilecoinConnector =
+          typeof f.default != "undefined" ? f.default.Connector : f.Connector;
+        // @ts-ignore
+        return new Connector(providerOptions, executor);
       }
       default: {
         // for future plugin compat
