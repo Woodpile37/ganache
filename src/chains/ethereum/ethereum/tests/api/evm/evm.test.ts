@@ -3,9 +3,6 @@ import assert from "assert";
 import { Data, Quantity } from "@ganache/utils";
 import EthereumProvider from "../../../src/provider";
 import { TypedRpcTransaction } from "@ganache/ethereum-transaction";
-// our version of memdown uses patch-package to put a 200ms delay around the
-// _batch function, which is used by the blockchain class to save blocks to the
-// db
 import memdown from "memdown";
 
 function between(x: number, min: number, max: number) {
@@ -138,11 +135,16 @@ describe("api", () => {
       });
 
       it("should save the block before returning", async () => {
-        // use our memdown version which is intentionally slower to consistently
-        // reproduce a past race condition where a block was mined and returned
-        // by evm_mine before it actually saved to the database. for history,
-        // the race condition issue is documented here:
+        // slow down memdown's _batch function to consistently reproduce a past
+        // race condition where a block was mined and returned by evm_mine
+        // before it actually saved to the database. for history, the race
+        // condition issue is documented here:
         // https://github.com/trufflesuite/ganache/issues/3060
+        memdown._batch = function (array, options, callback) {
+          setTimeout(() => {
+            memdown.prototype._batch(array, options, callback);
+          }, 20);
+        };
         const options = { database: { db: memdown() } };
         const provider = await getProvider(options);
         await provider.request({ method: "evm_mine", params: [{}] });
@@ -231,9 +233,13 @@ describe("api", () => {
       it("should set storage slot and delete after", async () => {
         const provider = await getProvider();
         const [account] = await provider.send("eth_accounts");
-        const slot = "0x0000000000000000000000000000000000000000000000000000000000000005";
+        const slot =
+          "0x0000000000000000000000000000000000000000000000000000000000000005";
         const newStorage = Data.from("0xbaddad42");
-        const initialStorage = await provider.send("eth_getStorageAt", [account, slot]);
+        const initialStorage = await provider.send("eth_getStorageAt", [
+          account,
+          slot
+        ]);
         assert.strictEqual(initialStorage, "0x");
         const setStatus = await provider.send("evm_setAccountStorageAt", [
           account,
@@ -241,7 +247,10 @@ describe("api", () => {
           newStorage.toString()
         ]);
         assert.strictEqual(setStatus, true);
-        const afterCode = await provider.send("eth_getStorageAt", [account, slot]);
+        const afterCode = await provider.send("eth_getStorageAt", [
+          account,
+          slot
+        ]);
         assert.strictEqual(afterCode, newStorage.toString());
 
         // Check that the storage can be deleted
@@ -252,7 +261,10 @@ describe("api", () => {
           emptyStorage.toString()
         ]);
         assert.strictEqual(deletedStatus, true);
-        const deletedStorage = await provider.send("eth_getStorageAt", [account, slot]);
+        const deletedStorage = await provider.send("eth_getStorageAt", [
+          account,
+          slot
+        ]);
         assert.strictEqual(deletedStorage, emptyStorage.toString());
       });
     });
