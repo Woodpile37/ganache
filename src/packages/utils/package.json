@@ -47,7 +47,7 @@
     "tooling"
   ],
   "dependencies": {
-    "emittery": "0.10.0",
+    "emittery": "1.0.1",
     "keccak": "3.0.1",
     "seedrandom": "3.0.5"
   },
