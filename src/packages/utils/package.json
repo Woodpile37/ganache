@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@trufflesuite/uws-js-unofficial": "20.8.0-unofficial.0",
-    "@types/mocha": "9.0.0",
+    "@types/mocha": "10.0.1",
     "@types/seedrandom": "3.0.1",
     "cross-env": "7.0.3",
     "mocha": "10.1.0",
